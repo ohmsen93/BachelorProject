@@ -1,0 +1,104 @@
+/* Base page setup */
+*{
+    border:0;
+    padding:0;
+    margin:0;
+}
+
+#wrapper{
+    margin:auto;
+
+}
+
+
+
+
+
+footer{
+    height: 100px;
+}
+
+/* Display List */
+
+#displaySelect{
+    background-color: #333;
+    font-size: 48pt;
+    text-align: center;
+}
+
+#displaySelect option{
+    display:inline-block;
+}
+
+#displaySelect option:hover{
+    background-color: red;
+}
+
+
+/* Home */
+
+.roomList{
+    background-color: #999;
+    min-height: 100%;
+}
+
+
+.roomList ul li a{
+    display:block;
+    height: 80px;
+    font-size: 48pt;
+    font-family: Arial, Helvetica, sans-serif;
+    color:red;
+    line-height: 100%;
+}
+
+.roomList ul li:hover{
+    background-color: red;
+}
+
+.roomContent{
+    min-height: 100%;
+    height: 990px;
+    border:solid 1px black;
+}
+
+.roomContent img{
+    position:absolute;
+    left:55%;
+    bottom:50%;
+}
+
+
+
+
+/* Room */
+
+.schedule{
+    height: 100%;
+    width: 100%;
+}
+
+#room1{
+    background-color: green;
+    display:none;
+}
+
+#room2{
+    background-color: blue;
+    display:none;
+
+}
+
+#room3{
+    background-color: purple;
+    display:none;
+
+}
+
+
+/* Schedule */
+
+.participantList{
+    background-color: #999;
+    border: solid 1px red;
+}

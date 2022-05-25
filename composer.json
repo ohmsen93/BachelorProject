@@ -1,0 +1,18 @@
+{
+  "name": "vendor_name/finalproject",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Mads Ohmsen",
+      "email": "mads80m3@stud.kea.dk"
+    }
+  ],
+  "require": {
+    "phpunit/phpunit": "9.5.10",
+    "ext-pdo": "*",
+    "google/apiclient": "^2.12",
+    "twbs/bootstrap": "^5.1"
+  }
+}
