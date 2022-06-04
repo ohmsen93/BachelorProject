@@ -11,16 +11,14 @@ require_once ROOT_PATH . "/config/db_connection.php";
 // include the base controller file
 require_once ROOT_PATH . "/controllers/api/BaseController.php";
 
-// include the controller files
-require_once ROOT_PATH . "/controllers/api/BaseController.php";
-require_once ROOT_PATH . "/controllers/api/UserController.php";
-require_once ROOT_PATH . "/controllers/api/RoomController.php";
-require_once ROOT_PATH . "/controllers/api/MeetingController.php";
+
 
 
 // include the use model file
 require_once ROOT_PATH . "/models/admin.php";
 require_once ROOT_PATH . "/models/user.php";
+require_once ROOT_PATH . "/models/miscDBInfo.php";
+require_once ROOT_PATH . "/models/display.php";
 require_once ROOT_PATH . "/models/room.php";
 require_once ROOT_PATH . "/models/meeting.php";
 

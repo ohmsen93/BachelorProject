@@ -1,4 +1,7 @@
 <?php
+
+use SebastianBergmann\Environment\Console;
+
 require __DIR__ . "/config/config.php";
 
 
@@ -16,14 +19,48 @@ $url = substr($url, strpos($url, "api"));
 // Split the url to get something meaningful to work with
 $url = explode('/', urldecode($url));
 
-
 // Request method is used to determine correct action
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 // Index 1 is going to be the "model" in plural; for instance tracks, Users, etc.
 switch ($url[1] ?? null) {
+    case 'displays':
+        require ROOT_PATH . "Controllers/Api/DisplayController.php";
+        $objController = new DisplayController();
+
+        // if count is 2, as in tags after the project root, this being api/users, api is on index 0, displays on index 1, if we were to include another tag the count would be 3 and it would skip the if function below.
+        if(count($url) === 2){
+            // i check the requestMethod through the use of $_SERVER['REQUEST_METHOD'], it is an easy way of getting "post, put, get, delete" for a switch later
+            if($requestMethod === 'GET'){
+                // then we include a get for a search query, and enable the search function if we are searching, or just list the displays if not.
+                if(isset($_GET['search'])){
+                    // htmlspecialchars are utilized here as it takes an input from the url string, it is to prevent code injection.
+                    //$objController->searchdisplay(htmlspecialchars($_GET['search']));
+                } else {
+                    // here we call the list displays function in our displaysController in order to list our displays.
+                    $objController->listDisplays();
+                }
+            }
+            // if the requestmethod is post, and $_POST name isset input it into the database through adddisplay().
+            if ($requestMethod === 'POST' && isset($_POST['name']))
+            {
+                $objController->addDisplay(htmlspecialchars($_POST['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            }
+        }
+        // Here we target specific displays through the url, First we check if the url count is 3, as in the tags after the root folder, so in this case api/displays/$id, would put the count at 3, and $url[2] would target the id, hence why we use that for the getdisplaysById.
+        if (count($url) === 3 && $requestMethod === 'GET') {$objController->getDisplayById($url[2]);}
+        if (count($url) === 3 && $requestMethod === 'DELETE') {$objController->deleteDisplay($url[2]);}
+        if (count($url) === 3 && $requestMethod === 'PUT')
+        {
+            $_PUT = json_decode(file_get_contents("php://input"), true);
+            var_dump($_PUT);
+            $objController->updateDisplay($url[2], $_PUT['name']);
+        }
+
+        else {http_response_code(404); echo 'Not found';}
+        break;
     case 'rooms':
-        require ROOT_PATH . "Controllers/Api/UserController.php";
-        $objController = new UserController();
+        require ROOT_PATH . "Controllers/Api/RoomController.php";
+        $objController = new RoomController();
 
         // if count is 2, as in tags after the project root, this being api/users, api is on index 0, Rooms on index 1, if we were to include another tag the count would be 3 and it would skip the if function below.
         if(count($url) === 2){
@@ -95,28 +132,74 @@ switch ($url[1] ?? null) {
         require ROOT_PATH . "Controllers/Api/UserController.php";
         $objController = new UserController();
 
-        if (count($url) === 2 && $requestMethod === 'POST' &&
-            isset($_POST['firstName']) && isset($_POST['lastName']) &&
-            isset($_POST['password']) && isset($_POST['email']))
+
+        if (count($url) === 2)
         {
-            $objController->addNewUser(
-                $_POST['google_account_id'], $_POST['firstName'], $_POST['lastName'], $_POST['email'], $_POST['password']);
+            if ($requestMethod === 'GET')
+            {
+                if (isset($_GET['search']))
+                {
+                    //$objController->searchMeeting(htmlspecialchars($_GET["search"]));
+
+                }
+                else {$objController->listUsers();}
+            }
+
+            // Creates a new user
+            if (count($url) === 3 && $requestMethod === 'POST' && $url[2] === 'create')
+            {
+                // Takes raw data from the request
+                $json = file_get_contents('php://input');
+                // Converts it into a PHP object
+                $data = json_decode($json);
+                // GET the email
+                $firstName = $data->firstName;
+                $lastName = $data->lastName;
+                $email = $data->email;
+                $token = $data->token;
+                
+                $objController->addNewUser($firstName, $lastName, $email, $token);
+            }
+
         }
 
-        if (count($url) === 3 && $requestMethod === 'GET') {$objController->getUserById($url[2]);}
-        if (count($url) === 3 && $requestMethod === 'POST' &&
-            isset($_POST['firstName']) && isset($_POST['lastName'])
-            && isset($_POST['email']))
+        if (count($url) === 2 && $requestMethod === 'POST')
         {
-            $objController->updateUser($url[2],
-                $_POST['firstName'], $_POST['lastName'], $_POST['password']);
+            // Takes raw data from the request
+            $json = file_get_contents('php://input');
+            // Converts it into a PHP object
+            $data = json_decode($json);
+            
+            // GET the email
+            $email = $data->email;
+            
+            $objController->getUserByEmail($email);
         }
 
-        else {http_response_code(404);echo 'Not found';}
+        if (count($url) === 3 && $requestMethod === 'DELETE') {$objController->deleteUser($url[2]);}
+        if (count($url) === 2 && $requestMethod === 'PUT')
+        {
+            $_PUT = json_decode(file_get_contents("php://input"), true);
+            $objController->updateUser($_PUT['email'], $_PUT['firstName'], $_PUT['lastName'], $_PUT['fk_role_id']);
+        }
+
+        else {http_response_code(404); echo 'Not found';}
         break;
 
+    case "miscDBInfo":
+        require ROOT_PATH . "Controllers/Api/MiscDBInfoController.php";
+        $objController = new MiscDBInfoController();
+        if (count($url) === 2)
+        {
+            if ($requestMethod === 'GET')
+            {
+                $objController->listRoles();
+            }
+        }
+        break;
 
-    default:
+        default:
         http_response_code(404);
         echo 'Not found';
-}
+
+    }

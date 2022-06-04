@@ -1,43 +1,43 @@
 <?php
 require_once ROOT_PATH . "config/db_connection.php";
 
-class room extends DB_CONNECTION
+class display extends DB_CONNECTION
 {
 
-    public function getRooms(){
-        /* Get all rooms*/
+    public function getDisplays(){
+        /* Get all displays*/
         $query = <<<'SQL'
-                SELECT * FROM rooms;
+                SELECT * FROM displays;
             SQL;
 
         /* fetchAll is used to return multiple rows */
         return $this->run($query)->fetchAll();
     }
 
-    public function getRoomById($id){
-        /* Get specific room by id*/
+    public function getDisplayById($id){
+        /* Get specific display by id*/
         $query = <<<'SQL'
-                SELECT * FROM rooms where id = ?;
+                SELECT * FROM displays where id = ?;
             SQL;
 
         /* fetch is used to return single row */
         return $this->run($query, $id)->fetch();
     }
 
-    public function addRoom($name){
-        /* Insert/add a new room in the database */
+    public function addDisplay($name){
+        /* Insert/add a new display in the database */
         $query = <<<'SQL'
-                INSERT INTO rooms (name)
+                INSERT INTO displays (name)
                 VALUES (?);
             SQL;
 
         return $this->run($query, $name);
     }
 
-    public function updateRoom($id, $name){
-        /* Updates a room in the database by id */
+    public function updateDisplay($id, $name){
+        /* Updates a display in the database by id */
         $query = <<<'SQL'
-                UPDATE rooms
+                UPDATE displays
                 SET name = ?
                 WHERE id = ?;
             SQL;
@@ -45,25 +45,30 @@ class room extends DB_CONNECTION
         return $this->run($query, [$name, $id])->rowCount();
     }
 
-    public function deleteRoom($id){
+    public function deleteDisplay($id){
         $chinook_db = new DB_CONNECTION();
         $connection = $chinook_db->pdo;
         if($connection){
             try{
-                /* Deletes an room in the database by id*/
+                /* Deletes an display in the database by id*/
+
+                /* Before deleting the display we first have to deal with the albums and the tracks from the displays.
+                    As such we start with the smallest and backtrack, thing being track -> album -> display due to db constraints */
+
+                // first we make a general select over the display, their albums and their tracks.
 
                 $query = <<<'SQL'
-                        DELETE FROM rooms
+                        DELETE FROM displays
                             WHERE id = ?
                         SQL;
                 $Del_exec = $connection->prepare($query);
                 $Del_exec->execute([$id]);
 
                 $Del_exec = Null;
-                return "room with id: ".$id." deleted";
+                return "display with id: ".$id." deleted";
 
             } catch (Exception $e){
-                return "room could not be deleted... Error: ". $e;
+                return "display could not be deleted... Error: ". $e;
             }
         } else {
             return "Database connection failed";

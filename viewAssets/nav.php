@@ -1,109 +1,99 @@
-<?php
-    // here we set the customerId to the session, in order to later use it in the jquery to check if the user is logged in.
-    $customerId = '';
-    if(isset($_SESSION['customerId'])){
-        $customerId = $_SESSION['customerId'] ?? '';
-    }
-
-    if(isset($_SESSION['admin'])){
-        $admin = $_SESSION['admin'] ?? '';
-    }
-
-?>
-
-
-<nav id="mainNavigation">
-    <ul>
-        <li>
-            <a href="?" class="<?=(!isset($_GET['page'])) ? "active" : "" ?>">Home</a>
-        </li>
-        <li>
-            <a href="?view=artists" class="<?=(isset($_GET['page']) && $_GET['page'] == 'artists') ? "active" : "" ?>">Artists</a>
-        </li>
-        <li>
-            <a href="?view=albums" class="<?=(isset($_GET['page']) && $_GET['page'] == 'albums') ? "active" : "" ?>">Albums</a>
-        </li>
-        <li>
-            <a href="?view=tracks" class="<?=(isset($_GET['page']) && $_GET['page'] == 'tracks') ? "active" : "" ?>">Tracks</a>
-        </li>
-        <li>
-            <button id="LoginButton" class="NavButton">Login</button>
-            <button id="CartButton" class="NavButton">Cart (0)</button>
-        </li>
-    </ul>
-
-    <form id="loginForm" method="POST">
-        <fieldset>
-            <h2>Login</h2>
-            <label for="loginEmail">Email: </label>
-            <input type="email" id="loginEmail" name="loginEmail" placeholder="Email">
-
-            <label for="loginPassword">Password: </label>
-            <input type="password" id="loginPassword" name="loginPassword" placeholder="Password">
-
-            <input type="submit" id="loginSubmit" name="loginSubmit" value="Login">
-            <a href="?view=registration">Register!</a>
-        </fieldset>
-    </form>
-</nav>
-
 <script>
     $(document).ready(function () {
+        
+        // Code to allow for Get variables in JS
+        function getQueryParams(qs) {
+            qs = qs.split("+").join(" ");
+            let params = {},
+                tokens,
+                re = /[?&]?([^=]+)=([^&]*)/g;
 
-        // here we set the customerId from the session in order to enable us to change the loginform
-        let customerId = "<?php echo $customerId;?>";
-        let admin = "<?php echo $admin;?>";
-
-        console.log(customerId);
-        if(customerId !== '') {
-            $("#LoginButton").text('Profile');
-
-            $("#loginForm").empty();
-
-            // new loginform and data.
-            $.get("api/customers/"+customerId, function(data) {
-                let results = "";
-                const loginForm = $('#loginForm');
-
-                    results +=
-                        "<p>Firstname: "+ data['FirstName'] +"</p>" +
-                        "<p>Lastname:"+ data['LastName'] +"</p>" +
-                        "<a href='?view=profile&id="+ data['CustomerId'] +"'>Profile</a>"+
-                        "<input type=\"submit\" name=\"logout\" id=\"logout\" value=\"Logout\">";
-
-
-                // Only append once, build the html above
-                loginForm.html(results);
-
-            })
-
-        } else if (admin === '1'){
-            sessionStorage.setItem('admin', '1');
-            $("#LoginButton").text('Admin');
-
-            $("#loginForm").empty();
-
-            // new loginform and data.
-            let results = "";
-            const loginForm = $('#loginForm');
-
-            results +=
-                "<p>Administration</p>" +
-                "<input type=\"submit\" name=\"logout\" id=\"logout\" value=\"Logout\">";
-
-
-            // Only append once, build the html above
-            loginForm.html(results);
-
+            while (tokens = re.exec(qs)) {
+                params[decodeURIComponent(tokens[1])]
+                    = decodeURIComponent(tokens[2]);
+            }
+            return params;
         }
 
+        let $_GET = getQueryParams(document.location.search);
 
 
+        // Get the displays to populate the 
+
+        // Get the rooms to populate the navigation
+
+        let Model = $_GET['view']
+        switch (Model){
+            case 'rooms':
+                let room = $_GET['room'];
+                let tools = '<div class="tools">'+
+                                '<a class="btn btn-primary bookRoom" href="?view=schedule&room='+room+'">Book Room</a>'+
+                            '</div';
+
+                $('#mainNavigation').append(tools)
+
+                $.get("api/rooms", function(data){
+                        //Create the list and rows
+                    let result =    '<div class="row list-group">'+
+                                        '<ul class="roomList ">';
+                                        // Display Get results goes here
+                        //Get the list elements
+                    $.each(data, function(i, item){
+                        console.log(item['id']);
+                        console.log(item['name']);
+                        result +=   "<li>"+
+                                    "<a class='col-12 roomListItem list-group-item' href='?view=rooms&room="+item['id']+"' >"+item['name']+"</a>"+
+                                    "</li>";
+                    });
+                        //Close the list and rows
+                    result +=       '</ul>'+
+                                    '</div>';
+
+                    $('#mainNavigation').append(result);
+
+                    });
+                break;
+            case 'schedule':
+                let result =    '<form action="" class="form-group">'+
+                                        '<label for="startTime">Starting time:</label>'+
+                                        '<input type="datetime-local" class="form-control" name="startTime" placeholder="Start Time" id="startTime">'+
+                                        '<label for="endTime">Ending time:</label>'+
+                                        '<input type="datetime-local" class="form-control" name="endTime" Placeholder="End Time" id="endTime">'+
+                                    '</form>'+
+                                '<div class="tools">'+
+                                '<a href="#" id="CreateMeeting" class="btn btn-primary" value="">Create Meeting</a>'+
+                                '</div>';
+
+                $('#mainNavigation').html(result);
+                break;
+        }
+
+        
+        $(".bookRoom").click(function(data){
+            let sessionEmail = "<?php if(!isset($_SESSION['email'])){ echo "null"; }else{ echo "set";}?>";
+
+                console.log(sessionEmail);
+
+            if(sessionEmail == "null"){
+                
+                console.log("logging in");
+
+                data.preventDefault();
+                
+                alert("login needed");
+                window.location.href = "<?php echo $client->createAuthUrl(); ?>";
+
+
+            } else {
+                console.log("use logged in info");
+            }
+
+
+
+        });
+
+        
     });
-    
-    $("#LoginButton").click(function (){
-        $("#loginForm").toggle();
 
 
-    });
 </script>

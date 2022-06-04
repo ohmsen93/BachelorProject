@@ -43,7 +43,7 @@ if ((isset($uri[2]) && $uri[2] != 'customer') || !isset($uri[4])) {
     <!-- Scripts -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
-    <script src="js/scripts.js" defer></script>
+    <!-- <script src="js/scripts.js" defer></script> Scripts -->
 
 
 
@@ -57,24 +57,43 @@ if ((isset($uri[2]) && $uri[2] != 'customer') || !isset($uri[4])) {
 </header>
 <body>
 
-    <div class="container-fluid">
-        <?php
+<div class="container-fluid">
+    <div class="row">
+        <nav id="mainNavigation" class="col-2">
+        <?php include "viewAssets/nav.php"; ?>
 
+        </nav>
+        <div id="mainContent" class="col-10">
+            <?php
+                switch ($view){
+                    case "rooms":
+                        include "views/room.php";
+                        break;
 
-            switch ($view){
-                case "schedule":
-                    include "views/schedule.php";
-                    break;
+                    case "registration":
+                        include "views/registration.php";
+                        break;
 
-                default:
-                    include "views/home.php";
-            }
+                    case "schedule":
+                        include "views/schedule.php";
+                        break;
 
-        ?>
+                    default:
+                        include "views/home.php";
+                }
+
+            ?>
+        </div>
     </div>
+</div>
+
+
+    
 <footer class='container-fluid'>
     <?php include "viewAssets/footer.php"; ?>
 </footer>
+
+
 
     <script>
 

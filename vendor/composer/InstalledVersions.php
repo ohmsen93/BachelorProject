@@ -27,12 +27,12 @@ class InstalledVersions
 private static $installed = array (
   'root' => 
   array (
-    'pretty_version' => '1.0.0+no-version-set',
-    'version' => '1.0.0.0',
+    'pretty_version' => 'dev-master',
+    'version' => 'dev-master',
     'aliases' => 
     array (
     ),
-    'reference' => NULL,
+    'reference' => '1ea3d8b226cfbf86c60afbfff0e723e5ef8b1cd8',
     'name' => 'vendor_name/finalproject',
   ),
   'versions' => 
@@ -57,12 +57,12 @@ private static $installed = array (
     ),
     'google/apiclient' => 
     array (
-      'pretty_version' => 'v2.12.4',
-      'version' => '2.12.4.0',
+      'pretty_version' => 'v2.12.5',
+      'version' => '2.12.5.0',
       'aliases' => 
       array (
       ),
-      'reference' => '702eed9ae7022ba20dc7118c8161060cb50ee9f8',
+      'reference' => 'eb10f733eb0ebec058776cda206009d01af9f9e3',
     ),
     'google/apiclient-services' => 
     array (
@@ -546,12 +546,12 @@ private static $installed = array (
     ),
     'vendor_name/finalproject' => 
     array (
-      'pretty_version' => '1.0.0+no-version-set',
-      'version' => '1.0.0.0',
+      'pretty_version' => 'dev-master',
+      'version' => 'dev-master',
       'aliases' => 
       array (
       ),
-      'reference' => NULL,
+      'reference' => '1ea3d8b226cfbf86c60afbfff0e723e5ef8b1cd8',
     ),
     'webmozart/assert' => 
     array (
