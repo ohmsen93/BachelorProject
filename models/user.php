@@ -37,49 +37,50 @@ class user extends DB_CONNECTION {
      * Optional
 
      */
-    function addNewUser($firstName, $lastName, $email, $token):bool
+    function addNewUser($firstName, $lastName, $email, $oauth_user_id):bool
     {   
         try{
             // Check if the user already exists
             $query = <<<'SQL'
-            SELECT COUNT(*) AS total FROM users WHERE email = ?;
+            SELECT COUNT(*) AS total FROM users WHERE oauth_user_id = ?;
             SQL;
             $stmt = $this->pdo->prepare($query);
-            $stmt->execute([$email]);
+            $stmt->execute([$oauth_user_id]);
             if ($stmt->fetch()['total'] > 0) {
-            return false;
+                return false;
             }
 
             //Begin the insert transaction
 
-            $this->pdo->beginTransaction();
+            //$this->pdo->beginTransaction();
 
             // Insert into google_account
-            $query = <<<'SQL'
-            INSERT INTO google_accounts (token, refresh_token) VALUES (?, ?);
-            SQL;
-            $stmt = $this->pdo->prepare($query);
-            $stmt->execute([$token->access_token, $token->id_token]);
+            // $query = <<<'SQL'
+            // INSERT INTO google_accounts (oauth_user_id, token, refresh_token) VALUES (?, ?);
+            // SQL;
+            // $stmt = $this->pdo->prepare($query);
+            // $stmt->execute([$oauth_user_id, $token->access_token, $token->id_token]);
 
 
             //Get the google_account_id
-            $query = <<<'SQL'
-                SELECT id FROM google_accounts WHERE refresh_token = ?;
-            SQL;
+            // $query = <<<'SQL'
+            //     SELECT id FROM google_accounts WHERE refresh_token = ?;
+            // SQL;
 
             /* fetch is used to return single row */
-            $google_account_id = $this->run($query, $token->id_token)->fetchObject();
+            // $google_account_id = $this->run($query, $token->id_token)->fetchObject();
 
 
             // Insert the user
 
             $query = <<<'SQL'
-            INSERT INTO users (google_account_id, firstName, lastName, email) VALUES (?, ?, ?, ?);
+            INSERT INTO users (oauth_user_id, firstName, lastName, email) VALUES (?, ?, ?, ?);
             SQL;
             $stmt = $this->pdo->prepare($query);
-            $stmt->execute([$google_account_id->id, $firstName, $lastName, $email]);
+            $stmt->execute([$oauth_user_id, $firstName, $lastName, $email]);
 
-            $this->pdo->commit();
+
+            //$this->pdo->commit();
 
             return true;
 
@@ -133,4 +134,14 @@ class user extends DB_CONNECTION {
         /* fetch is used to return single row */
         return $this->run($query, $email)->fetch();
     }
+
+    function getUserByOAuthId($oauth_user_id) {
+        $query = <<<'SQL'
+                SELECT * FROM users WHERE oauth_user_id = ?;
+            SQL;
+
+        // need to join the google account as thats the one we are checking
+        /* fetch is used to return single row */
+        return $this->run($query, $oauth_user_id)->fetch();
+	}
 }

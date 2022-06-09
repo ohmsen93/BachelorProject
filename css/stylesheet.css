@@ -12,7 +12,7 @@
 
 
 header{
-    height: 150px;
+    height: 200px;
 }
 
 #mainContent{
@@ -22,6 +22,13 @@ header{
 
 footer{
     height: 150px;
+}
+
+/* login Panel */
+
+.loginPanel{
+    background-color: #999;
+    height: 200px;
 }
 
 /* navigation */

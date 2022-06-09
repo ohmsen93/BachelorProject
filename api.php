@@ -23,7 +23,7 @@ $url = explode('/', urldecode($url));
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 // Index 1 is going to be the "model" in plural; for instance tracks, Users, etc.
 switch ($url[1] ?? null) {
-    case 'displays':
+    case 'display':
         require ROOT_PATH . "Controllers/Api/DisplayController.php";
         $objController = new DisplayController();
 
@@ -58,7 +58,7 @@ switch ($url[1] ?? null) {
 
         else {http_response_code(404); echo 'Not found';}
         break;
-    case 'rooms':
+    case 'room':
         require ROOT_PATH . "Controllers/Api/RoomController.php";
         $objController = new RoomController();
 
@@ -78,7 +78,7 @@ switch ($url[1] ?? null) {
             // if the requestmethod is post, and $_POST name isset input it into the database through addRoom().
             if ($requestMethod === 'POST' && isset($_POST['name']))
             {
-                $objController->addRoom(htmlspecialchars($_POST['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                $objController->addRoom(htmlspecialchars($_POST['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'), htmlspecialchars($_POST['calendarId'], ENT_QUOTES | ENT_HTML5, 'UTF-8'), htmlspecialchars($_POST['calendarUrl'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
             }
         }
         // Here we target specific Rooms through the url, First we check if the url count is 3, as in the tags after the root folder, so in this case api/Rooms/$id, would put the count at 3, and $url[2] would target the id, hence why we use that for the getRoomsById.
@@ -88,13 +88,13 @@ switch ($url[1] ?? null) {
         {
             $_PUT = json_decode(file_get_contents("php://input"), true);
             var_dump($_PUT);
-            $objController->updateRoom($url[2], $_PUT['name']);
+            $objController->updateRoom($url[2], htmlspecialchars($_PUT['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'), htmlspecialchars($_PUT['calendarId'], ENT_QUOTES | ENT_HTML5, 'UTF-8'), htmlspecialchars($_PUT['calendarUrl'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         }
 
         else {http_response_code(404); echo 'Not found';}
         break;
 
-    case 'meetings':
+    case 'meeting':
         require ROOT_PATH . "/Controllers/Api/MeetingController.php";
         $objController = new MeetingController();
 
@@ -128,10 +128,9 @@ switch ($url[1] ?? null) {
         else {http_response_code(404); echo 'Not found';}
         break;
 
-    case 'users':
+    case 'user':
         require ROOT_PATH . "Controllers/Api/UserController.php";
         $objController = new UserController();
-
 
         if (count($url) === 2)
         {
@@ -145,35 +144,32 @@ switch ($url[1] ?? null) {
                 else {$objController->listUsers();}
             }
 
-            // Creates a new user
-            if (count($url) === 3 && $requestMethod === 'POST' && $url[2] === 'create')
-            {
-                // Takes raw data from the request
-                $json = file_get_contents('php://input');
-                // Converts it into a PHP object
-                $data = json_decode($json);
-                // GET the email
-                $firstName = $data->firstName;
-                $lastName = $data->lastName;
-                $email = $data->email;
-                $token = $data->token;
-                
-                $objController->addNewUser($firstName, $lastName, $email, $token);
-            }
-
         }
 
-        if (count($url) === 2 && $requestMethod === 'POST')
+        // Creates a new user
+        if (count($url) === 3 && $requestMethod === 'POST')
         {
             // Takes raw data from the request
             $json = file_get_contents('php://input');
             // Converts it into a PHP object
             $data = json_decode($json);
-            
             // GET the email
+            $firstName = $data->firstName;
+            $lastName = $data->lastName;
             $email = $data->email;
+            $oauth_user_id = $url[2];
+            //$token = $data->token;
+
+            print_r($oauth_user_id);
             
-            $objController->getUserByEmail($email);
+            $objController->addNewUser($firstName, $lastName, $email, $oauth_user_id);
+        }
+
+        
+
+        if (count($url) === 3 && $requestMethod === 'GET')
+        {
+            $objController->getUserByOAuthId($url[2]);
         }
 
         if (count($url) === 3 && $requestMethod === 'DELETE') {$objController->deleteUser($url[2]);}

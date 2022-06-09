@@ -24,25 +24,25 @@ class room extends DB_CONNECTION
         return $this->run($query, $id)->fetch();
     }
 
-    public function addRoom($name){
+    public function addRoom($name, $calendarid, $calendarurl){
         /* Insert/add a new room in the database */
         $query = <<<'SQL'
-                INSERT INTO rooms (name)
-                VALUES (?);
+                INSERT INTO rooms (name, calendarId, calendarURL)
+                VALUES (?, ?, ?);
             SQL;
 
-        return $this->run($query, $name);
+        return $this->run($query, [$name, $calendarid, $calendarurl]);
     }
 
-    public function updateRoom($id, $name){
+    public function updateRoom($id, $name, $calendarid, $calendarurl){
         /* Updates a room in the database by id */
         $query = <<<'SQL'
                 UPDATE rooms
-                SET name = ?
+                SET name = ?, calendarId = ?, calendarURL = ?
                 WHERE id = ?;
             SQL;
         /* @return mixed Returns a single column from the next row of a result set or FALSE if there are no more rows.*/
-        return $this->run($query, [$name, $id])->rowCount();
+        return $this->run($query, [$name, $calendarid, $calendarurl, $id])->rowCount();
     }
 
     public function deleteRoom($id){

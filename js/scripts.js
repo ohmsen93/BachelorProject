@@ -1,752 +1,241 @@
-// Setting cart array
-let sessionArray = JSON.parse(sessionStorage.getItem('cartArr')) || [];
-let adminAccess = JSON.parse(sessionStorage.getItem('admin')) || [];
 
-console.log(adminAccess);
-
-
-
-// sets the admin session to 0
-$(document).ready(function(){
-    $('#logout').click(function(){
-        sessionStorage.setItem('admin', 0);
-
-    })
-
-
-
-    // Here we setup the search function with jQuery, it runs of a submit of our SearchBar Form.
-    $("#CartButton").text("Cart (" + (sessionArray.length) + ")");
-
-    // SEARCH FUNCTION
-    $('#SearchBar').submit(function (event){
-        event.preventDefault();
-        let searchParams = new URLSearchParams(window.location.search);
-
-        const Model =  searchParams.get('view')
-        const Query =  $("#SearchQuery").val();
-        const Method =  searchParams.get('method');
-        const id = searchParams.get('id');
-
-
-
-
-        if(Method === 'post'){
-            // We check if adminAccess is enabled as Post for artist, album and track is not allowed for normal users.
-            if(adminAccess === 1){
-                $.get("api/" + Model, function(data){
-                    let results = "";
-                    let optionsArtist = "";
-                    let optionsAlbum = "";
-                    let optionsMediaType = "";
-                    let optionsGenre = "";
-                    const contentList = $('#contentList');
-                    contentList.empty();
-
-                    if(Model === 'artists') {
-
-                        results +=
-                            "<form id='ArtistForm' name='ArtistForm'>" +
-                            "<input type='text' id='ArtistName' placeholder='Artist Name'/>" +
-                            "<input type='submit' id='ArtistCreate' placeholder='Create Artist'/>" +
-                            "</form>"
-                        contentList.append(results);
-
-                        $('#ArtistForm').submit(function (event) {
-                            event.preventDefault();
-
-                            let name = $("#ArtistName").val();
-
-
-                            $.post("api/artists", {
-                                "name": name
-                            }, function (return_data) {
-                                alert(return_data);
-                            });
-                        })
-
-                    }
-
-                    if (Model === 'albums'){
-
-                            results +=
-                                "<form id='AlbumForm' name='AlbumForm'>" +
-                                "<input type='text' id='AlbumTitle' placeholder='Album Title'/>" +
-                                "<select id='ArtistIdSelector'></select>" +
-                                "<input type='submit' id='ArtistCreate' placeholder='Create Album'/>" +
-                                "</form>"
-                            contentList.append(results);
-                        $.get("api/artists", function(artistdata){
-                            $.each(artistdata, function (i, item) {
-
-                                optionsArtist +=
-                                    "<option value="+ item['ArtistId']+">"+ item['Name'] +"</option>"
-                            })
-                            $("#ArtistIdSelector").html(optionsArtist);
-
-                        })
-
-                        $('#AlbumForm').submit(function (event) {
-                            event.preventDefault();
-
-                            let title = $("#AlbumTitle").val();
-                            let artistId = $("#ArtistIdSelector").val();
-
-
-                            $.post("api/albums", {
-                                "title": title,
-                                "artistId":artistId
-                            }, function (return_data) {
-                                alert(return_data);
-                            });
-                        })
-                    }
-
-                    if (Model === 'tracks'){
-
-                        results +=
-                            "<form id='TrackForm' name='TrackForm'>" +
-                            "<input type='text' id='TrackName' placeholder='Track Name'/>" +
-                            "<select id='AlbumIdSelector'></select>" +
-                            "<select id='MediaTypeIdSelector'></select>" +
-                            "<select id='GenreIdSelector'></select>" +
-                            "<input type='text' id='TrackComposer' placeholder='Composer'/>" +
-                            "<input type='number' id='TrackMilliseconds' placeholder='Milliseconds'/>" +
-                            "<input type='number' id='TrackBytes' placeholder='Bytes'/>" +
-                            "<input type='number' id='TrackPrice' placeholder='Price'/>" +
-                            "<input type='submit' id='TrackCreate' placeholder='Create Track'/>" +
-                            "</form>"
-                        contentList.append(results);
-
-                        $.get("api/albums", function(albumdata){
-                            $.each(albumdata, function (i, item) {
-
-                                optionsAlbum +=
-                                    "<option value="+ item['AlbumId']+">"+ item['Title'] +"</option>"
-                            })
-                            $("#AlbumIdSelector").html(optionsAlbum);
-                        })
-
-                        $.get("api/lookup/mediatypes", function(mediatypedata){
-                            $.each(mediatypedata, function (i, item) {
-
-                                optionsMediaType +=
-                                    "<option value="+ item['MediaTypeId']+">"+ item['Name'] +"</option>"
-                            })
-                            $("#MediaTypeIdSelector").html(optionsMediaType);
-                        })
-
-                        $.get("api/lookup/genres", function(genredata){
-                            $.each(genredata, function (i, item) {
-
-                                optionsGenre +=
-                                    "<option value="+ item['GenreId']+">"+ item['Name'] +"</option>"
-                            })
-                            $("#GenreIdSelector").html(optionsGenre);
-                        })
-
-
-
-                        $('#TrackForm').submit(function (event) {
-                            event.preventDefault();
-
-                            let TrackName = $("#TrackName").val();
-                            let AlbumId = $("#AlbumIdSelector").val();
-                            let MediaTypeId = $("#MediaTypeIdSelector").val();
-                            let GenreId = $("#GenreIdSelector").val();
-                            let Composer = $("#TrackComposer").val();
-                            let Milliseconds = $("#TrackMilliseconds").val();
-                            let Bytes = $("#TrackBytes").val();
-                            let unitPrice = $("#TrackPrice").val();
-
-
-                            $.post("api/tracks", {
-                                "name": TrackName,
-                                "albumId":AlbumId,
-                                "mediaTypeId":MediaTypeId,
-                                "genreId":GenreId,
-                                "composer":Composer,
-                                "milliseconds":Milliseconds,
-                                'bytes':Bytes,
-                                'unitPrice':unitPrice
-                            }, function (return_data) {
-                                alert(return_data);
-                            });
-                        })
-                    }
-
-                })
-            } else {
-                window.location.href = "index.php?"
-            }
-
-
-
-        } else if(Method === 'update' && typeof(id) != "undefined" && id !== null){
-
-            if(adminAccess === 1){
-                $.get("api/" + Model + "/" + id, function(data){
-                    let optionsArtist = "";
-                    let optionsAlbum = "";
-                    let optionsMediaType = "";
-                    let optionsGenre = "";
-                    console.log('update Artists');
-
-                    let results = "";
-                    const contentList = $('#contentList');
-                    contentList.empty();
-
-                    if(Model === 'artists'){
-                        results +=
-                            "<form id='ArtistForm' name='ArtistForm' method='put'>" +
-                            "<input type='text' id='ArtistName' placeholder='Artist Name'/>" +
-                            "<input type='submit' id='ArtistCreate' placeholder='Create Artist'/>" +
-                            "</form>"
-                        contentList.append(results);
-
-                        $('#ArtistName').val(data['Name']);
-
-                        $('#ArtistForm').submit(function (event) {
-                            event.preventDefault();
-
-                            let name = $("#ArtistName").val();
-                            let id = data['ArtistId'];
-
-
-                            let payload = {"name":name}
-
-                            $.ajax({
-                                type: 'PUT',
-                                url: 'api/artists/'+id,
-                                contentType: 'application/json',
-                                data: JSON.stringify(payload), // access in body
-                            }).done(function () {
-                                console.log('SUCCESS');
-                            })
-
-                        })
-                    }
-
-
-                    if (Model === 'albums'){
-                        results +=
-                            "<form id='AlbumForm' name='AlbumForm'>" +
-                            "<input type='text' id='AlbumTitle' placeholder='Album Title'/>" +
-                            "<select id='ArtistIdSelector'></select>" +
-                            "<input type='submit' id='ArtistCreate' placeholder='Create Album'/>" +
-                            "</form>"
-                        contentList.append(results);
-
-                        $.get("api/artists", function(artistdata){
-                            $.each(artistdata, function (i, item) {
-
-                                optionsArtist +=
-                                    "<option value="+ item['ArtistId']+">"+ item['Name'] +"</option>"
-                            })
-                            $("#ArtistIdSelector").html(optionsArtist);
-                        })
-
-                        $('#AlbumTitle').val(data['Title']);
-                        $('#ArtistIdSelector').val(data['ArtistId']);
-
-
-                        $('#AlbumForm').submit(function (event) {
-                            event.preventDefault();
-
-                            let title = $("#AlbumTitle").val();
-                            let artistId = $("#ArtistIdSelector").val();
-                            let id = data['AlbumId'];
-
-                            let payload = {"title":title,"artistId":artistId}
-
-                            $.ajax({
-                                type: 'PUT',
-                                url: 'api/albums/'+id,
-                                contentType: 'application/json',
-                                data: JSON.stringify(payload), // access in body
-                            }).done(function () {
-                                console.log('SUCCESS');
-                            })
-                        })
-                    }
-
-
-                    if (Model === 'tracks'){
-                        results +=
-                            "<form id='TrackForm' name='TrackForm'>" +
-                            "<input type='text' id='TrackName' placeholder='Track Name'/>" +
-                            "<select id='AlbumIdSelector'></select>" +
-                            "<select id='MediaTypeIdSelector'></select>" +
-                            "<select id='GenreIdSelector'></select>" +
-                            "<input type='text' id='TrackComposer' placeholder='Composer'/>" +
-                            "<input type='number' id='TrackMilliseconds' placeholder='Milliseconds'/>" +
-                            "<input type='number' id='TrackBytes' placeholder='Bytes'/>" +
-                            "<input type='number' id='TrackPrice' placeholder='Price'/>" +
-                            "<input type='submit' id='TrackCreate' placeholder='Create Track'/>" +
-                            "</form>"
-                        contentList.append(results);
-
-                        $.get("api/albums", function(albumdata){
-                            $.each(albumdata, function (i, item) {
-
-                                optionsAlbum +=
-                                    "<option value="+ item['AlbumId']+">"+ item['Title'] +"</option>"
-                            })
-                            $("#AlbumIdSelector").html(optionsAlbum);
-                        })
-
-                        $.get("api/lookup/mediatypes", function(mediatypedata){
-                            $.each(mediatypedata, function (i, item) {
-
-                                optionsMediaType +=
-                                    "<option value="+ item['MediaTypeId']+">"+ item['Name'] +"</option>"
-                            })
-                            $("#MediaTypeIdSelector").html(optionsMediaType);
-                        })
-
-                        $.get("api/lookup/genres", function(genredata){
-                            $.each(genredata, function (i, item) {
-
-                                optionsGenre +=
-                                    "<option value="+ item['GenreId']+">"+ item['Name'] +"</option>"
-                            })
-                            $("#GenreIdSelector").html(optionsGenre);
-                        })
-
-                        console.log(data);
-
-                        $("#TrackName").val(data['TrackName']);
-                        $("#AlbumIdSelector").val(data['AlbumId']);
-                        $("#MediaTypeIdSelector").val(data['MediaTypeId']);
-                        $("#GenreIdSelector").val(data['GenreId']);
-                        $("#TrackComposer").val(data['Composer']);
-                        $("#TrackMilliseconds").val(data['Milliseconds']);
-                        $("#TrackBytes").val(data['Bytes']);
-                        $("#TrackPrice").val(data['UnitPrice']);
-
-
-                        $('#TrackForm').submit(function (event) {
-                            event.preventDefault();
-
-                            let TrackName = $("#TrackName").val();
-                            let AlbumId = $("#AlbumIdSelector").val();
-                            let MediaTypeId = $("#MediaTypeIdSelector").val();
-                            let GenreId = $("#GenreIdSelector").val();
-                            let Composer = $("#TrackComposer").val();
-                            let Milliseconds = $("#TrackMilliseconds").val();
-                            let Bytes = $("#TrackBytes").val();
-                            let unitPrice = $("#TrackPrice").val();
-
-                            let payload = {
-                                "name": TrackName,
-                                "albumId":AlbumId,
-                                "mediaTypeId":MediaTypeId,
-                                "genreId":GenreId,
-                                "composer":Composer,
-                                "milliseconds":Milliseconds,
-                                'bytes':Bytes,
-                                'unitPrice':unitPrice
-                            }
-
-                            $.ajax({
-                                type: 'PUT',
-                                url: 'api/tracks/'+id,
-                                contentType: 'application/json',
-                                data: JSON.stringify(payload), // access in body
-                            }).done(function () {
-                                console.log('SUCCESS');
-                            })
-
-
-                        })
-                    }
-
-                })
-            } else {
-                window.location.href = "index.php?"
-            }
-
-        } else {
-            $.get("api/" + Model + "?search=" + Query, function(data){
-
-                console.log('List Artists')
-
-                let results = "";
-                const contentList = $('#contentList');
-
-                if (Model === 'artists'){
-                    $.each(data, function (i, item) {
-
-                        results +=
-                            "<div class='card' id='" + item["ArtistId"] + "'>" +
-                            "<h2>" + item["Name"] + "</h2>"
-
-                        // Here we implement the delete links for Artists
-                        if(adminAccess === 1){
-                            results +=
-                                "<a href='#' class='artistDelete' data-id='"+ item["ArtistId"] +"'>Delete</a>"
-                        }
-
-
-                        results +=
-                            "</div>"
-
-                    });
-                    // Only append once, build the html above
-                    contentList.html(results);
-
-                    // here we implement the Delete functionality utilizing the delete links for artists.
-                    if(adminAccess === 1) {
-                        $(".artistDelete").click(function () {
-
-                            delId = $(this).attr("data-id");
-                            console.log(delId)
-
-                            $.ajax({
-                                type: 'DELETE',
-                                url: 'api/artists/' + delId,
-                            }).done(function () {
-                                // make a messaging feedback system if theres time.
-                                console.log('Artist Deleted on id:' + delId);
-                            })
-                        })
-                    }
-                }
-
-
-                if (Model === 'albums'){
-                    $.each(data, function (i, item) {
-
-                        results +=
-                            "<div class='card' id='" + item["AlbumId"] + "'>" +
-                            "<h2>" + item["Title"] + "</h2>"
-
-                        // Here we implement the delete links for Albums
-                        if(adminAccess === 1){
-                            results +=
-                                "<a href='#' class='albumDelete' data-id='"+ item["AlbumId"] +"'>Delete</a>"
-                        }
-                        results +=
-                            "</div>"
-
-                    });
-                    // Only append once, build the html above
-                    contentList.html(results);
-
-                    // here we implement the Delete functionality utilizing the delete links for albums.
-                    // might need more due to no cascade in db.
-                    if(adminAccess === 1) {
-                        $(".albumDelete").click(function () {
-
-                            delId = $(this).attr("data-id");
-                            console.log(delId)
-
-                            $.ajax({
-                                type: 'DELETE',
-                                url: 'api/albums/' + delId,
-                            }).done(function () {
-                                // make a messaging feedback system if theres time.
-                                console.log('Album Deleted on id:' + delId);
-                                window.location.href = "index.php?view=albums"
-                            })
-                        })
-                    }
-                }
-
-
-                if (Model === 'tracks'){
-                    $.each(data, function (i, item) {
-
-                        results +=
-                            "<div class='card' id='" + item["TrackId"] + "'>" +
-                            "<h2>" + item["Name"] + "</h2>" +
-                            "<p>Price: "+ item["UnitPrice"] +"</p>" +
-                            "<a href='#' data-name='"+ item['Name'] +"' data-price='"+ item['UnitPrice'] +"' data-id='"+ item['TrackId'] +"' class='cartable'>Add to card</a>"
-
-                            // Here we implement the delete links for Albums
-                            if(adminAccess === 1){
-                                results +=
-                                    "<a href='#' class='trackDelete' data-id='"+ item["TrackId"] +"'>Delete</a>"
-                            }
-                            results +=
-                                "</div>"
-
-
-                    });
-                    // Only append once, build the html above
-                    contentList.html(results);
-
-                    // here we implement the Delete functionality utilizing the delete links for tracks.
-                    // might need more due to no cascade in db.
-                    if(adminAccess === 1) {
-                        $(".trackDelete").click(function () {
-
-                            delId = $(this).attr("data-id");
-                            console.log(delId)
-
-                            $.ajax({
-                                type: 'DELETE',
-                                url: 'api/tracks/' + delId,
-                            }).done(function () {
-                                // make a messaging feedback system if theres time.
-                                console.log('Track Deleted on id:' + delId);
-                                window.location.href = "index.php?view=tracks"
-                            })
-                        })
-                    }
-                }
-
-            })
-
+    // Code to allow for Get variables in JS
+    function getQueryParams(qs) {
+        qs = qs.split("+").join(" ");
+        let params = {},
+            tokens,
+            re = /[?&]?([^=]+)=([^&]*)/g;
+
+        while (tokens = re.exec(qs)) {
+            params[decodeURIComponent(tokens[1])]
+                = decodeURIComponent(tokens[2]);
         }
+        return params;
+    }
 
-    })
+    function generateNavListElements($target){
 
-    // Here we automate a click for the SearchBar Form in order to list all results on page load.
-    $('#SearchButton').click();
+        let $_GET = getQueryParams(document.location.search);
 
+        let model = $_GET['view'];
 
+        let listElements = "<li>"+
+                            "<a class='col-12 list-group-item' href='?' >Home</a>"+
+                            "</li>";
 
+        // First we get the model for the list we want to generate
+        $.get("api/"+model, function(data){
+            //console.log(data);
+            //then we generate the list elements based of the model
+            $.each(data, function(i, item){
+                //console.log(item['id']);
+                //console.log(item['name']);
+                listElements +=     "<li>"+
+                                        "<a class='col-12 list-group-item' href='?view="+model+"&"+model+"="+item['id']+"' >"+item['name']+"</a>"+
+                                    "</li>";
+            });
 
-    // Modal SETUP
-    $('#CartButton').click(function(){
-        $('#modal-screen').toggle();
-    })
-    // MODAL Exit
-    $('#modal-exit').click(function(){
-        $('#modal-screen').toggle();
-    })
-
-    // <-- SHOPPING CART  -->
-
-    // Might be an idea to implement SESSION here in some way to save the cart between sessions if need be.
-
-    // ADD TO CART
-
-    // "Event delegation", have to do it this way because my content is dynamically generated
-    $(document).ready(function(){
-        let resultsArr = '';
-
-        resultsArr +=
-            "<tr>"+
-            "<th>Track Name</th>"+
-            "<th>Artist Name</th>"+
-            "<th>Unit Price</th>"+
-            "</tr>"
-
-        $(document).on("click",".cartable",function(){
-        // Storing key value pairs of track information in cart
-
-            data = {
-                "Name": $(this).attr("data-name"),
-                "TrackId": $(this).attr("data-id"),
-                "UnitPrice": $(this).attr("data-price")
-            };
-
-            // Update cart with count of items in it
-            $("#CartButton").text("Cart (" + (sessionArray.length+1) + ")");
-
-            // push data to the session array
-            sessionArray.push(data);
-
-            // set sessionStorage 'cartArr' to the sessionArray, we do this so we can save cart info between page refreshes.
-            sessionStorage.setItem('cartArr', JSON.stringify(sessionArray));
-
-            // We load our sessionArray on click
-            $.each(sessionArray, function (i, items) {
-                resultsArr +=
-                    "<tr>"+
-                    "<td>" + items["Name"] + "</td>"+
-                    "<td>" + items["TrackId"] + "</td>"+
-                    "<td>" + items["UnitPrice"] + "</td>"+
-                    "</tr>"
-            })
-
-            // Here we use the html tag to send the content to the div when we click a track.
-            $('#cart-table').html(resultsArr);
-            resultsArr = [];
-
+            $($target).html(listElements);
+            
+            return true;
         });
+    };
 
-        // We load our sessionArray on pageload,
-        $.each(sessionArray, function (i, items) {
-            resultsArr +=
-                "<tr>"+
-                "<td>" + items["Name"] + "</td>"+
-                "<td>" + items["TrackId"] + "</td>"+
-                "<td>" + items["UnitPrice"] + "</td>"+
-                "</tr>"
-        })
+    function generateViewTools($target){
+        
+        let $_GET = getQueryParams(document.location.search);
 
-        // Here we use the html tag to send the content to the div when we load the page, we get the data from sessionStorage
-        $('#cart-table').html(resultsArr);
-        resultsArr = [];
-    });
+        let view = $_GET['view'] ?? ''
 
-    // CLEAR CART
-    $('#clear').click(function (event) {
-        sessionArray = []
-        sessionStorage.setItem('cartArr', JSON.stringify(sessionArray));
-        let resultsArr = '';
+        let generatedTools = $('.tools').html();
+        
+        // Basically an isset function checks if $_GET['view'] is set in the url
+        if(typeof(view) != "undefined" && view !== null){
+            let tools = $_GET[view];
+            
+            //Checks if the submodel is loaded in the url, so we can load the relevant tools.
+            if(typeof(tools) != "undefined" && tools !== null){
 
-        resultsArr +=
-            "<tr>"+
-            "<th>Track Name</th>"+
-            "<th>Artist Name</th>"+
-            "<th>Unit Price</th>"+
-            "</tr>"
+                switch(view){
+                    case 'schedule':
+                        console.log('display Schedule tools');
 
-        $('#cart-table').html(resultsArr);
-        $('#Invoice').html(resultsArr);
+                        generatedTools = '<form action="" class="form-group">'+
+                                            '<label for="startTime">Starting time:</label>'+
+                                            '<input type="datetime-local" class="form-control" name="startTime" placeholder="Start Time" id="startTime">'+
+                                            '<label for="endTime">Ending time:</label>'+
+                                            '<input type="datetime-local" class="form-control" name="endTime" Placeholder="End Time" id="endTime">'+
+                                            '</br>'+
+                                            '<a href="#" id="CreateMeeting" class="btn btn-primary" value="">Create Meeting</a>'+
+                                        '</form>';
+                        break;
 
-        $("#CartButton").text("Cart (" + (sessionArray.length) + ")");
+                    default:
+                        console.log('unknown sub-page');
+                }
 
-    })
-
-
-    /* Checkout */
-
-    /* First we need to populate the checkout form */
-
-    $(document).ready(function () {
-        let invoiceList = ''
-        invoiceList +=
-            "<tr>"+
-            "<th>Track Name</th>"+
-            "<th>Artist Name</th>"+
-            "<th>Unit Price</th>"+
-            "</tr>"
-        let sum = '';
-
-        $.each(sessionArray, function (i, items) {
-            sum = Number(sum)+(Number(items["UnitPrice"]));
-            invoiceList +=
-                "<tr>"+
-                "<td>" + items["Name"] + "</td>"+
-                "<td>" + items["TrackId"] + "</td>"+
-                "<td>" + items["UnitPrice"] + "</td>"+
-                "</tr>"
-            console.log(sum);
-        })
-        $('#sum').html(sum);
-        $('#Invoice').html(invoiceList);
-    })
-
-    /* Customer Create */
-
-    $('#RegForm').submit(function (event) {
-        event.preventDefault();
-
-        let FirstName = $("#RegFirstName").val();
-        let LastName = $("#RegLastName").val();
-        let Password = $("#RegPassword").val();
-        let Company = $("#RegCompany").val();
-        let Address = $("#RegAddress").val();
-        let City = $("#RegCity").val();
-        let State = $("#RegState").val();
-        let Country = $("#RegCountry").val();
-        let PostalCode = $("#RegPostalCode").val();
-        let Phone = $("#RegPhone").val();
-        let Fax = $("#RegFax").val();
-        let Email = $("#RegEmail").val();
-
-
-        $.post("api/customers", {
-            "firstName": FirstName,
-            "lastName":LastName,
-            "password":Password,
-            "company":Company,
-            "address":Address,
-            "city":City,
-            'state':State,
-            'country':Country,
-            'postalCode':PostalCode,
-            'phone':Phone,
-            'fax':Fax,
-            'email':Email,
-
-        }, function (return_data) {
-            alert(return_data);
-        });
-    })
-
-    /* Customer Update */
-
-    $(document).ready(function () {
-        let searchParams = new URLSearchParams(window.location.search);
-
-        const customerId = searchParams.get('id');
-
-        $.get("api/customers/" + customerId, function (profiledata) {
-
-            console.log(profiledata);
-
-            $("#ProfileFirstName").val(profiledata['FirstName']);
-            $("#ProfileLastName").val(profiledata['LastName']);
-            $("#ProfileCompany").val(profiledata['Company']);
-            $("#ProfileAddress").val(profiledata['Address']);
-            $("#ProfileCity").val(profiledata['City']);
-            $("#ProfileState").val(profiledata['State']);
-            $("#ProfileCountry").val(profiledata['Country']);
-            $("#ProfilePostalCode").val(profiledata['PostalCode']);
-            $("#ProfilePhone").val(profiledata['Phone']);
-            $("#ProfileFax").val(profiledata['Fax']);
-            $("#ProfileEmail").val(profiledata['Email']);
-
-        })
-
-        $('#ProfileForm').submit(function (event) {
-            event.preventDefault();
-
-            let FirstName = $("#ProfileFirstName").val();
-            let LastName = $("#ProfileLastName").val();
-            let Password = $("#ProfilePassword").val();
-            let Company = $("#ProfileCompany").val();
-            let Address = $("#ProfileAddress").val();
-            let City = $("#ProfileCity").val();
-            let State = $("#ProfileState").val();
-            let Country = $("#ProfileCountry").val();
-            let PostalCode = $("#ProfilePostalCode").val();
-            let Phone = $("#ProfilePhone").val();
-            let Fax = $("#ProfileFax").val();
-            let Email = $("#ProfileEmail").val();
-
-
-            let payload = {
-                "firstName": FirstName,
-                "lastName":LastName,
-                "password":Password,
-                "company":Company,
-                "address":Address,
-                "city":City,
-                'state':State,
-                'country':Country,
-                'postalCode':PostalCode,
-                'phone':Phone,
-                'fax':Fax,
-                'email':Email
+                $($target).html(generatedTools);
+            } else {
+                generatedTools = '';
+                console.log("home Tools");
+                $($target).html(generatedTools);
             }
+        }
+    }
 
-            $.ajax({
-                type: 'POST',
-                url: 'api/customers/'+customerId,
-                contentType: 'application/json',
-                data: JSON.stringify(payload), // access in body
-            }).done(function () {
-                console.log('SUCCESS');
-            })
+    function generateParticipantList($target){
+        console.log("gets function")
+        $.get("api/user", function(data){
+            //Create the list and rows
+            let result =    '';
+            let listId = 0;
+                // user Get results goes here
+                    //Get the list elements
+                    $.each(data, function(i, item){
+                        console.log(item);
+
+                        result += '<div class="employee col-12" data-email="'+item['email']+'" data-id="'+listId+'">'+item['firstName']+' '+item['lastName']+'</div>';
+                        listId++;
+                    });
+
+            // append exising users to employee list
+            $($target).append(result);
+        
+        
+            /* Logic for moving form one list to another */
+            $(".employee").each(function(){
+                // First we define the Div as This, so we can work with it later.
+                console.log("1");
+                let $this = $(this);
+                // Then we make a functionality when we click the thing we want to interact with.
+                $this.click(function(event){
+                    // as we end up with more each functionality ive decided to rename the "outerThis" employee.
+                    let employee = $this;
+                    // here we find the parent, so we can check the class in order to figure out which list the employee is within.
+                    let parent = $this.closest('.participantList');
+                    // here we define dataVal from the data-id tag on the object.
+                    let dataVal = $this.data('id');
+
+                    // Now we check if the object is within the employees list.
+                    if(parent.hasClass('employees')){
+                        // then we check if the destination list is empty.
+                        if($("#participants").children().length == 0){
+                            // if it is empty, we simply append the object.
+                            $("#participants").append(employee);
+                        } else {
+                            // if the destination is not empty, we will have to iterate through it in order to find the correct placement.
+                            $("#participants").children().each(function(i){
+                                // here we get the id of the child.
+                                let thisVal = +$(this).data('id');
+                                // then we check if the data value is greater than the child's value and then inserts before.
+                                if(dataVal < thisVal){
+                                    console.log('insert here');
+                                    employee.insertBefore(this);
+                                    // we return false to break the loop
+                                    return false;
+                                // if the element is last or satisfies the codition for insertion
+                                } else if ($(this).next().length == 0 || (dataVal <= thisVal && thisVal > +$(this).next().data('sort'))) {
+                                    employee.insertAfter(this);
+                                    // we return false to break the loop
+                                    return false;
+                                }
+                            });
+                        }
+
+
+                    } else {
+                        
+                        console.log('move '+dataVal+' to employees');
+                        console.log("employees has "+$("#employees").children().length);
+
+                        if($("#employees").children().length == 0){
+                            $("#employees").append(employee);
+                        } else {
+                            $("#employees").children().each(function(i){
+                                let thisVal = +$(this).data('id');
+                                let $innerThis = this;
+
+
+                                if(dataVal < thisVal){
+                                    console.log('insert here');
+                                    employee.insertBefore(this);
+                                    return false;
+                                } else if ($(this).next().length == 0 || (dataVal <= thisVal && thisVal > +$(this).next().data('sort'))) {
+                                    employee.insertAfter(this);
+                                    return false;
+                                }
+                            });
+                        };
+                    };
+                });            
+            });
+        });
+    }
+
+    function ScheduleModal(){
+
+        let $modalParticipantList = '';
+
+        // then we take the children from the participants div
+        $("#participants").children().each(function(i){
+            // we make a list of the participants, first we make a variable to store them in.
+            console.log($(this));
+            // we get their name
+            let employeeName = $(this).text();
+
+            // the listId
+            let employeeDataId = $(this).data('id');
+
+            // here we can add additional info if it is needed later
+
+            $modalParticipantList += "<li><p>"+employeeName+"</p><p>"+employeeDataId+"</p></li>";
+
+        });
+
+        $("#modalStartTime").append($("#startTime").val());
+        $("#modalEndTime").append($("#endTime").val());
+
+
+        // add the list elements to the ul.
+        $("#modalParticipants").html($modalParticipantList);
+
+        // fade the modal in.
+        $("#ScheduleModal").fadeIn();
+
+    }
+
+    //Loads a Schedule
+    function loadSchedule($target){
+        let $_GET = getQueryParams(document.location.search);
+
+
+        let Model = $_GET['view'];
+        let Id = $_GET['room'];
+
+        // Basically an isset function checks if $_GET['view'] is set in the url
+        if(typeof(Model) != "undefined" && Model !== null){
+
+            //Checks if the submodel is loaded in the url, so we can load the relevant schedule.
+            if(typeof(Id) != "undefined" && Id !== null){
+
+                // Get specific room based of id from navigation
+                    
+                $.get("api/"+Model+"/"+Id, function(data){
+                    let result = '';
+                    console.log(data);
+
+                    result = '<iframe class="schedule container-fluid" src="'+data['calendarURL']+'" frameborder="0"></iframe>'
+
+                    $($target).html(result);
+
+                });
+            }
+        }
+    }
+
+ 
+     
 
 
 
-
-
-        })
-    })
-
-
-
-
-
-})
-
-
+    

@@ -27,7 +27,7 @@ class UserController extends BaseController {
         $this->check_for_error_msg($errorMsg, $responseData, $errorHeader, $this);
     }
 
-    public function addNewUser($firstName, $lastName, $email, $token)
+    public function addNewUser($firstName, $lastName, $email, $oauth_user_id)
     {
         /** Add a new user/sign-up */
         $errorHeader = '';
@@ -38,7 +38,7 @@ class UserController extends BaseController {
         {
             $userModel = new user();
 
-            $userModel->addNewUser($firstName, $lastName, $email, $token);
+            $userModel->addNewUser($firstName, $lastName, $email, $oauth_user_id);
 
             $responseData = json_encode(array('message' => 'User Registered'));
         }
@@ -109,4 +109,26 @@ class UserController extends BaseController {
         $this->check_for_error_msg($errorMsg, $responseData, $errorHeader, $this);
     }
 
+    public function getUserByOAuthId($oauth_user_id)
+    {
+        /** Function to get a user by id and provide it json-encoded. */
+        // Initialize stuff
+        $errorHeader = '';
+        $errorMsg = '';
+        $responseData = '';
+
+        try {
+            // Model instance
+            $userModel = new user();
+            // Get user
+            $user = $userModel->getUserByOAuthId($oauth_user_id);
+            // Return as json
+            $responseData = json_encode($user);
+        } catch (Error $e) { // Errors are not exceptions, but rather an issue in the code
+            $errorMsg = 'Software first-aid needed!: ' . $e->getMessage();
+            $errorHeader = 'HTTP/1.1 500 Internal Server Error';
+        }
+
+        $this->check_for_error_msg($errorMsg, $responseData, $errorHeader, $this);
+    }
 }

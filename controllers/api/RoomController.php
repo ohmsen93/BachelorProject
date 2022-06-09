@@ -47,7 +47,7 @@ class RoomController extends BaseController {
         $this->check_for_error_msg($errorMsg, $responseData, $errorHeader, $this);
     }
 
-    public function addRoom($name)
+    public function addRoom($name, $calendarid, $calendarurl)
     {
         /** Add an room by id */
         $errorHeader = '';
@@ -57,7 +57,7 @@ class RoomController extends BaseController {
         try
         {
             $roomModel = new room();
-            $roomModel->addroom($name);
+            $roomModel->addroom($name, $calendarid, $calendarurl);
             $responseData = json_encode('Created room with id: ' . $roomModel->pdo->lastInsertId());
         }
         catch (Error $e)
@@ -103,7 +103,7 @@ class RoomController extends BaseController {
 
     }
 
-    public function updateRoom($id, $name)
+    public function updateRoom($id, $name, $calendarid, $calendarurl)
     {
         /** Update an room */
         $errorHeader = '';
@@ -113,7 +113,7 @@ class RoomController extends BaseController {
         try
         {
             $roomModel = new room();
-            $roomModel = $roomModel->updateRoom($id, $name);
+            $roomModel = $roomModel->updateRoom($id, $name, $calendarid, $calendarurl);
             $responseData = json_encode('Updated ' . $roomModel . ' room');
         }
         catch (Error $e)

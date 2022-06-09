@@ -1,5 +1,14 @@
     <?php 
-
+//ensure the person is logged in
+    if(!isset($_SESSION['access_token'])){
+        ?>
+        <script type='text/javascript'>
+            let $message = "Login Required";
+            alert($message);
+            window.location.href='index.php';
+        </script>
+        <?php
+    }
     
     ?>    
     
@@ -68,7 +77,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary acceptMeeting">Accept</button>
+                    <form method="POST">
+                        <input type="submit" name="accept" class="btn btn-primary acceptMeeting" value="Accept">
+                    </form>
                 </div>
                 </div>
             
@@ -76,198 +87,74 @@
     </div>
 
 
-    <script>
-        $(document).ready(function(){
+<script>
+$(document).ready(function(){
 
 
-        /* Logic for populating list with employees */
+    /* Logic for populating list with employees */
+        generateParticipantList("#employees")
 
-        $.get("api/users", function(data){
-            //Create the list and rows
-            let result =    '';
-            let listId = 0;
-                // user Get results goes here
-                    //Get the list elements
-                    $.each(data, function(i, item){
-                        console.log(item);
+    /* function for opening the modal, and transfering data to it */
 
-                        result += '<div class="employee col-12" data-id="'+listId+'">'+item['firstName']+' '+item['lastName']+'</div>';
-                        listId++;
-                    });
-
-            // append exising users to employee list
-            $('#employees').append(result);
+    $("#CreateMeeting").click(function(){
+        ScheduleModal("#ScheduleModal");
         
-        
-            /* Logic for moving form one list to another */
-            $(".employee").each(function(){
-                // First we define the Div as This, so we can work with it later.
-                console.log("1");
-                let $this = $(this);
-                // Then we make a functionality when we click the thing we want to interact with.
-                $this.click(function(event){
-                    // as we end up with more each functionality ive decided to rename the "outerThis" employee.
-                    let employee = $this;
-                    // here we find the parent, so we can check the class in order to figure out which list the employee is within.
-                    let parent = $this.closest('.participantList');
-                    // here we define dataVal from the data-id tag on the object.
-                    let dataVal = $this.data('id');
 
-                    // Now we check if the object is within the employees list.
-                    if(parent.hasClass('employees')){
-                        // then we check if the destination list is empty.
-                        if($("#participants").children().length == 0){
-                            // if it is empty, we simply append the object.
-                            $("#participants").append(employee);
-                        } else {
-                            // if the destination is not empty, we will have to iterate through it in order to find the correct placement.
-                            $("#participants").children().each(function(i){
-                                // here we get the id of the child.
-                                let thisVal = +$(this).data('id');
-                                // then we check if the data value is greater than the child's value and then inserts before.
-                                if(dataVal < thisVal){
-                                    console.log('insert here');
-                                    employee.insertBefore(this);
-                                    // we return false to break the loop
-                                    return false;
-                                // if the element is last or satisfies the codition for insertion
-                                } else if ($(this).next().length == 0 || (dataVal <= thisVal && thisVal > +$(this).next().data('sort'))) {
-                                    employee.insertAfter(this);
-                                    // we return false to break the loop
-                                    return false;
-                                }
-                            });
-                        }
-
-
-                    } else {
-                        
-                        console.log('move '+dataVal+' to employees');
-                        console.log("employees has "+$("#employees").children().length);
-
-                        if($("#employees").children().length == 0){
-                            $("#employees").append(employee);
-                        } else {
-                            $("#employees").children().each(function(i){
-                                let thisVal = +$(this).data('id');
-                                let $innerThis = this;
-
-
-                                if(dataVal < thisVal){
-                                    console.log('insert here');
-                                    employee.insertBefore(this);
-                                    return false;
-                                } else if ($(this).next().length == 0 || (dataVal <= thisVal && thisVal > +$(this).next().data('sort'))) {
-                                    employee.insertAfter(this);
-                                    return false;
-                                }
-                            });
-                        };
-                    };
-                });            
-            });
-
-        
-        /* Logic something like Jquery, Create array from Participant Div, and then work from that */
-        // first we create an function when we click CreateMeeting
-        
-        /* Modal Show for meeting onclick for input submit "create meeting" */
-            $("#CreateMeeting").click(function(){
-
-                let $modalParticipantList = '';
-
-                // then we take the children from the participants div
-                $("#participants").children().each(function(i){
-                    // we make a list of the participants, first we make a variable to store them in.
-                    console.log($(this));
-                    // we get their name
-                    let employeeName = $(this).text();
-
-                    // the listId
-                    let employeeDataId = $(this).data('id');
-
-                    // here we can add additional info if it is needed later
-
-                    $modalParticipantList += "<li><p>"+employeeName+"</p><p>"+employeeDataId+"</p></li>";
-
-                });
-
-                $("#modalStartTime").append($("#startTime").val());
-                $("#modalEndTime").append($("#endTime").val());
-
-
-                // add the list elements to the ul.
-                $("#modalParticipants").html($modalParticipantList);
-
-                // fade the modal in.
-                $("#ScheduleModal").fadeIn();
-
-            });
-
-
-
-        // Logic for creating the meeting
-
-        // to create a meeting we need the google access info first.
-        // we can get that from the user that is logged in,
-        
-            /*
-            todo:
-
-            check if it is possible to create a meeting with the token information from the user that is logged in.         
-            
-            */
-
-
-        // Logic for informing the participants
-
-
-
-        });
-
-        $(".close").click(function(){
-                $("#ScheduleModal").fadeOut();
-            });
-
-
-            $(".acceptMeeting").click(function(data){
-                console.log("acceptMeeting");
-
-                let $calendarId = 'html24.net_3u70aooh2tn8j6cschgu2em0v0@group.calendar.google.com';
-                let $summary = 'This is the test summary';
-                let $all_day = '0';
-                let $event_time = ['start_time' = "2022-06-03T01:14",'end_time' = "2022-06-03T02:14"];
-                let $event_timezone = '';
-                let $access_token = '';
-
-                CreateCalendarEvent($calendarId, $summary, $all_day, $event_time, $event_timezone, $access_token);
-
-                
-            });
-
-            function CreateCalendarEvent($calendarId, $summary, $all_day, $event_time, $event_timezone, $access_token){
-
-                $url = '';
-                $url_events = 'https://www.googleapis.com/calendar/v3/calendars/'+$calendarId+'/events';
-
-                let payload = ['summary' = $summary];
-                if($all_day == 1) {
-                    payload['start'] = array('date' = $event_time['event_date']);
-                    payload['end'] = array('date' = $event_time['event_date']);
-                }
-                else {
-                    payload['start'] = array('dateTime' = $event_time['start_time'], 'timeZone' = $event_timezone);
-                    payload['end'] = array('dateTime' = $event_time['end_time'], 'timeZone' = $event_timezone);
-                }
-
-                console.log(payload);
-
-                /*
-                $.post($url_events, $payload, function(return_data){
-                    alert(return_data);
-                });
-                */
-            }
     });
+
+    $(".close").click(function(){
+        // fade the modal Out.
+        $("#ScheduleModal").fadeOut();
+    })
+
+    // Logic for creating the meeting
+
+    $(".acceptMeeting").click(function(event){
+        event.preventDefault();
+        participantEmailList = [];
+
+        //Generate an array of the emails from the participants so we can notify them.
+        $("#participants").children().each(function(i){
+
+                // we get their name
+                let employeeName = $(this).text();
+
+                // the listId
+                let employeeDataId = $(this).data('id');
+
+                // the Email
+                let employeeEmail = $(this).data('email');
+
+
+                participantEmailList.push(employeeEmail);
+
+        })
+
+        console.log(participantEmailList);
+
+         /* Get from elements values */
     
-    </script>
+
+        let sendData = function() {
+        $.post('google/createEvent.php', {
+            data: participantEmailList
+        }, function(response) {
+            console.log(response);
+        });
+        }
+        sendData();
+
+        //Create a google event.
+
+    });
+
+
+
+});
+
+    
+
+        
+
+
+</script>

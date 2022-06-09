@@ -15,7 +15,6 @@ require_once ROOT_PATH . "/controllers/api/BaseController.php";
 
 
 // include the use model file
-require_once ROOT_PATH . "/models/admin.php";
 require_once ROOT_PATH . "/models/user.php";
 require_once ROOT_PATH . "/models/miscDBInfo.php";
 require_once ROOT_PATH . "/models/display.php";

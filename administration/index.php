@@ -29,7 +29,7 @@ $admin = $_SESSION['admin'] ?? '';
     <!-- Scripts -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
-    <!-- <script src="js/scripts.js" defer></script> Scripts -->
+    <script src="adminJs/adminScripts.js" defer></script>
 
 
     <!-- Custom styles for this template -->
@@ -48,19 +48,19 @@ $admin = $_SESSION['admin'] ?? '';
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
-            <a class="nav-link" href="?">Home</a>
+            <a class="nav-link" href="../index.php">Frontend</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="?view=displays">Displays</a>
+            <a class="nav-link" href="?view=display">Displays</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="?view=rooms">Rooms</a>
+            <a class="nav-link" href="?view=room">Rooms</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="?view=meetings">Meetings</a>
+            <a class="nav-link" href="?view=meeting">Meetings</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="?view=users">Users</a>
+            <a class="nav-link" href="?view=user">Users</a>
           </li>
         </ul>
       </div>
@@ -70,19 +70,19 @@ $admin = $_SESSION['admin'] ?? '';
 
     <?php 
         switch($view){
-            case "displays":
+            case "display":
                 include "adminViews/display.php";
                 break;
 
-            case "rooms":
+            case "room":
                 include "adminViews/room.php";
                 break;
 
-            case "users":
+            case "user":
                 include "adminViews/user.php";
                 break;
 
-            case "meetings":
+            case "meeting":
                 include "adminViews/meeting.php";
                 break;
 
