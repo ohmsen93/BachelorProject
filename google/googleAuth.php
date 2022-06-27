@@ -6,10 +6,10 @@
 //require_once 'Google/Service/Oauth2.php';
 
 // Fill CLIENT ID, CLIENT SECRET ID, REDIRECT URI from Google Developer Console
- $client_id = '939294856842-2sibjb44s44cf7l1k57rmg0vd4klasb2.apps.googleusercontent.com';
- $client_secret = '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';
- $redirect_uri = 'http://localhost/BachelorProject/FinalProject/index.php';
- $simple_api_key = '<Your-API-Key>';
+ $client_id = '';
+ $client_secret = '';
+ $redirect_uri = '';
+ $simple_api_key = '';
  
 //Create Client Request to access Google API
 $client = new Google_Client();
